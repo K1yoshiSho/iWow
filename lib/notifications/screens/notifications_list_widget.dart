@@ -28,6 +28,9 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
   List<Data> dataList = [];
   late ScrollController _controller;
 
+  // Read all field
+  bool allReaded = true;
+
   // Pagination fields
   int _page = 1;
   int _limit = 1;
@@ -39,6 +42,11 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
   void initState() {
     _controller = ScrollController()..addListener(_loadMore);
     notificationBloc = NotificationBloc();
+    if (widget.unreadCount.count != 0) {
+      setState(() {
+        allReaded = false;
+      });
+    }
     _firstLoad();
     super.initState();
   }
@@ -73,12 +81,15 @@ class _NotificationsListWidgetState extends State<NotificationsListWidget> {
                     InkWell(
                       borderRadius: BorderRadius.circular(12),
                       onTap: () async {
-                        if (widget.unreadCount.count != 0) {
+                        if (allReaded == false) {
                           await HttpQuery().post(
                             url: '/notifications/mark-read',
                           );
                           dataList.clear();
                           _firstLoad();
+                          setState(() {
+                            allReaded = true;
+                          });
                         } else {
                           SnackBarManager(duration: 1500).informSnackBar(context, "Нет непрочитанных уведомлений ;)");
                         }
